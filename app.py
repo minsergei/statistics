@@ -12,13 +12,13 @@ import pandas as pd
 test = {'a':[1, 2, 3], 'b':[1, 2, 3]}
 df = pd.DataFrame.from_dict(test)
 
-app = Dash(__name__, title="Statistic Stadium", external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = Dash(__name__, title="Statistic Stadium", external_stylesheets=[dbc.themes.LUX])
 server = app.server
 
 # USER_PWD = {"user": "123",
 #             "user2": "useSomethingMoreSecurePlease",}
 # BasicAuth(app, USER_PWD)
-
+table1 = dash_table.DataTable(id='table_data', sort_action='native', style_table={'height': '700px', 'overflowY': 'auto'})
 app.layout = html.Div([
     html.H2(style={'color': 'darkblue',
                    'text-align': 'center',
@@ -37,9 +37,10 @@ app.layout = html.Div([
     dbc.Row([
         dbc.Col(width=0),
         dbc.Col([html.H6('Время проходов по времени', style={'padding': '5px'}),
-                 dash_table.DataTable(id='table_data', sort_action='native', style_table={'height': '700px', 'overflowY': 'auto'})], width=3),
+                 table1], width=3, style={'border': '2px solid', 'border-radius': '20px'}),
+        # dbc.Col(width=1),
+        dbc.Col([dcc.Graph(id='output_graph1', config={'displayModeBar': False}), dcc.Graph(id='output_graph2')], width=7, style={'border': '2px solid', 'border-radius': '20px'}),
         dbc.Col(width=1),
-        dbc.Col([dcc.Graph(id='output_graph1', config={'displayModeBar': False}), dcc.Graph(id='output_graph2')], width=7),
     ]),
     html.Br(),
     dbc.Row([
@@ -48,6 +49,7 @@ app.layout = html.Div([
 
     ]),
     html.Br(),
+
     # dash_table.DataTable(data=df.to_dict('records')),
 
 #     html.H2('The World Bank'),
@@ -81,6 +83,9 @@ def display_graph(match):
         return fig, fig2, title_page, number_of_passes, table_data.to_dict('records')
     else:
         data_to_fig = parser_data_of_time(open_csv(match)[3:])
+
+        df = pd.DataFrame.from_dict(data_to_fig[4])
+
         fig = px.line(x=data_to_fig[0], y=data_to_fig[1], height=400, title=f'РАСПРЕДЕЛЕНИЕ ВХОДОВ ПО БИЛЕТАМ ПО ВРЕМЕНИ {match}')
         fig2 = px.bar(x=data_to_fig[0], y=data_to_fig[1], height=400, text=data_to_fig[2])
         fig.layout.xaxis.title = 'Время'
@@ -89,9 +94,9 @@ def display_graph(match):
         fig2.layout.yaxis.title = 'Входы по билетам'
         title_page = f'Статистика по матчу {match}'
         number_of_passes =  f'Всего проходов по билетам: {data_to_fig[3][1]}'
-        table_data = pd.DataFrame.from_dict(data_to_fig[4])
 
-        return fig, fig2, title_page, number_of_passes, table_data.to_dict('records')
+
+        return fig, fig2, title_page, number_of_passes, df.to_dict('records')
 
 
 if __name__ == '__main__':
