@@ -1,96 +1,52 @@
-from dash import Dash, html, dcc, Input, Output, dash_table
 import dash_bootstrap_components as dbc
-from matplotlib.pyplot import title
+from dash import Input, Output, html, Dash
+table_header = [html.Thead(html.Tr([html.Th("First Name"), html.Th("Last Name")]))]
 
-from folder import input_match
-from parser import open_csv, parser_data_of_time
-# from dash_auth import BasicAuth
-import plotly.express as px
-import pandas as pd
+row1 = html.Tr([html.Td("Arthur"), html.Td("Dent")])
+row2 = html.Tr([html.Td("Ford"), html.Td("Prefect")])
+row3 = html.Tr([html.Td("Zaphod"), html.Td("Beeblebrox")])
+row4 = html.Tr([html.Td("Trillian"), html.Td("Astra")])
 
+table_body = [html.Tbody([row1, row2, row3, row4])]
+color_selector = html.Div(
+    [
+        html.Div("Select a colour theme:"),
+        dbc.Select(
+            id="change-table-color",
+            options=[
+                {"label": "primary", "value": "primary"},
+                {"label": "secondary", "value": "secondary"},
+                {"label": "success", "value": "success"},
+                {"label": "danger", "value": "danger"},
+                {"label": "warning", "value": "warning"},
+                {"label": "info", "value": "info"},
+                {"label": "light", "value": "light"},
+                {"label": "dark", "value": "dark"},
+            ],
+            value="primary",
+        ),
+    ],
+    className="p-3 m-2 border",
+)
 
-test = {'a':[1, 2, 3], 'b':[1, 2, 3]}
-df = pd.DataFrame.from_dict(test)
-
-app = Dash(__name__, title="Statistic Stadium", external_stylesheets=[dbc.themes.BOOTSTRAP])
-server = app.server
-
-# USER_PWD = {"user": "123",
-#             "user2": "useSomethingMoreSecurePlease",}
-# BasicAuth(app, USER_PWD)
-
-app.layout = html.Div([
-    html.H1(style={'color': 'blue',
-                   'fontSize': '40px',
-                   'text-align': 'center',
-                   'padding': '20px 20px 20px 20px'},
-                   id='title'),
-    html.Br(),
-    dbc.Row([
-        dbc.Col(width=1),
-        dbc.Col(dcc.Dropdown(input_match(), style={'color': 'darkblue'}, id='select_match'), width=5),
-        dbc.Col(width=1),
-        dbc.Col(html.Div(style={'color': 'darkblue',
-                   'fontSize': '20px',
-                   }, id='number_of_passes'), width=5),
-    ]),
-    html.Br(),
-    dbc.Row([
-        dbc.Col(dcc.Graph(id='output_graph1', config={'displayModeBar': False}), width=6),
-        dbc.Col(dcc.Graph(id='output_graph2'), width=6),
-    ]),
-    html.Br(),
-    dbc.Row([
-        dbc.Col(width=2),
-        dbc.Col(dcc.Graph(id='output_graph3'), width=6),
-        dbc.Col([html.H6('Время проходов по времени', style={'padding': '5px'}),
-                 dash_table.DataTable(id='table_data')], width=2),
-    ]),
-    html.Br(),
-    # dash_table.DataTable(data=df.to_dict('records')),
-
-#     html.H2('The World Bank'),
-#     html.P('Key Facts:', style={'color': 'blue', 'fontSize': '20px'}),
-#     html.Ul([
-#         html.Li('Number of Economies: 170'),
-#         html.Li('Temporal Coverage: 1974 - 2019'),
-#         html.Li('Update Frequency: Quarterly'),
-#         html.Li('Last Updated: March 18, 2000'),
-#         html.Li([
-#             'Source: ',
-#             html.A('https://datacatalog.worldbank.org/dataset/poverty-andequity-database', href='https://ya.ru')
-#         ])
-#     ], style={'color': 'red'})
-])
-@app.callback(Output('output_graph1', 'figure'),
-              Output('output_graph2', 'figure'),
-              Output('title', 'children'),
-              Output('number_of_passes', 'children'),
-              Output('table_data', 'data'),
-              Input('select_match', 'value'))
-
-def display_graph(match):
-    if match is None:
-        fig = px.bar()
-        fig2 = px.bar()
-        fig.layout.title = f'РАСПРЕДЕЛЕНИЕ ВХОДОВ ПО БИЛЕТАМ ПО ВРЕМЕНИ'
-        title_page = f'Статистика по матчу'
-        number_of_passes = 'Всего проходов по билетам: 0'
-        table_data = pd.DataFrame.from_dict({})
-        return fig, fig2, title_page, number_of_passes, table_data.to_dict('records')
-    else:
-        data_to_fig = parser_data_of_time(open_csv(match)[3:])
-        fig = px.line(x=data_to_fig[0], y=data_to_fig[1], height=500, title=f'РАСПРЕДЕЛЕНИЕ ВХОДОВ ПО БИЛЕТАМ ПО ВРЕМЕНИ {match}')
-        fig2 = px.bar(x=data_to_fig[0], y=data_to_fig[1], height=500, text=data_to_fig[2])
-        fig.layout.xaxis.title = 'Время'
-        fig.layout.yaxis.title = 'Входы по билетам'
-        fig2.layout.xaxis.title = 'Время'
-        fig2.layout.yaxis.title = 'Входы по билетам'
-        title_page = f'Статистика по матчу {match}'
-        number_of_passes =  f'Всего проходов по билетам: {data_to_fig[3][1]}'
-        table_data = pd.DataFrame.from_dict(data_to_fig[4])
-
-        return fig, fig2, title_page, number_of_passes, table_data.to_dict('records')
+table = html.Div(
+    [
+        color_selector,
+        dbc.Table(
+            # using the same table as in the above example
+            table_header + table_body,
+            id="table-color",
+            color="primary",
+        ),
+    ]
+)
+app = Dash(__name__, title="Statistic Stadium", external_stylesheets=[dbc.themes.LUX])
+app.layout = html.Div([dbc.Col(table, width=4)])
+#
+#
+@app.callback(Output("table-color", "color"), Input("change-table-color", "value"))
+def change_table_colour(color):
+    return color
 
 
 if __name__ == '__main__':

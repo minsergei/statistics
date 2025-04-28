@@ -12,13 +12,18 @@ import pandas as pd
 test = {'a':[1, 2, 3], 'b':[1, 2, 3]}
 df = pd.DataFrame.from_dict(test)
 
-app = Dash(__name__, title="Statistic Stadium", external_stylesheets=[dbc.themes.LUX])
+app = Dash(__name__, title="Statistic Stadium", external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
 
+# Авторизация простая
 # USER_PWD = {"user": "123",
 #             "user2": "useSomethingMoreSecurePlease",}
 # BasicAuth(app, USER_PWD)
-table1 = dash_table.DataTable(id='table_data', sort_action='native', style_table={'height': '700px', 'overflowY': 'auto'})
+
+# Вывод таблицы
+table1 = dash_table.DataTable(id='table_data', sort_action='native', style_table={'height': '700px', 'overflowY': 'auto', 'border': '2px solid', 'border-radius': '20px'}, style_header={'backgroundColor': 'rgb(30, 30, 30)', 'color': 'white'})
+
+# Вывод дашборда
 app.layout = html.Div([
     html.H2(style={'color': 'darkblue',
                    'text-align': 'center',
@@ -50,7 +55,6 @@ app.layout = html.Div([
     ]),
     html.Br(),
 
-    # dash_table.DataTable(data=df.to_dict('records')),
 
 #     html.H2('The World Bank'),
 #     html.P('Key Facts:', style={'color': 'blue', 'fontSize': '20px'}),
@@ -94,8 +98,6 @@ def display_graph(match):
         fig2.layout.yaxis.title = 'Входы по билетам'
         title_page = f'Статистика по матчу {match}'
         number_of_passes =  f'Всего проходов по билетам: {data_to_fig[3][1]}'
-
-
         return fig, fig2, title_page, number_of_passes, df.to_dict('records')
 
 
