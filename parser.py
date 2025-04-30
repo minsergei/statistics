@@ -6,22 +6,31 @@ def open_csv(filename):
     file_path = os.path.abspath(f'csv_files/{filename}')
     with open(file_path, newline='', encoding='cp1251') as File:
         reader = csv.reader(File)
-        pars = False
+        pars = 0
         pars_data = []
+        pars_data_2 = []
         for line in reader:
             if line:
                 if "РАСПРЕДЕЛЕНИЕ ВХОДОВ ПО БИЛЕТАМ ПО ВРЕМЕНИ" in line[0]:
-                    pars = True
-                if "РАСПРЕДЕЛЕНИЕ ВХОДОВ ПО БИЛЕТАМ ПО ТОЧКАМ ДОСТУПА" in line[0]:
-                    pars = False
-                if pars:
+                    pars = 1
+                if pars == 1:
                     pars_data.append(line[0])
-    return pars_data
+                if "РАСПРЕДЕЛЕНИЕ ВХОДОВ ПО БИЛЕТАМ ПО ТОЧКАМ ДОСТУПА" in line[0]:
+                    pars = 2
+                if pars == 2:
+                    pars_data_2.append(line[0])
+                if "РАСПРЕДЕЛЕНИЕ СОБЫТИЙ ВХОДОВ ПО БИЛЕТАМ" in line[0]:
+                    pars = 3
+                # if "РАСПРЕДЕЛЕНИЕ ВХОДОВ ПО БИЛЕТАМ ПО ТОЧКАМ ДОСТУПА" in line[0]:
+                #     pars = 0
+                # if pars == 1:
+                #     pars_data.append(line[0])
+    return pars_data[:-1], pars_data_2[:-1]
 
-
+# Парсим данные для РАСПРЕДЕЛЕНИЕ ВХОДОВ ПО БИЛЕТАМ ПО ВРЕМЕНИ
 def parser_data_of_time(data):
     total_data = " ".join(data[:1])
-    total_data_finish = total_data[:-1].split()
+    total_data_finish = total_data[:-1].split() #Общие данные
     time_pars = []
     count_pars = []
     percent_pars = []
@@ -34,18 +43,34 @@ def parser_data_of_time(data):
     df = {'Время проходов': '', 'Количество проходов': ''}
     df['Время проходов'] = time_pars
     df['Количество проходов'] = count_pars
-    return time_pars, count_pars, percent_pars, total_data_finish, df
+    df['В %'] = percent_pars
+    return total_data_finish, df
 
-#Ввод имя файла CSV
+"""-----------------------------------------------------------------"""
+# Ввод имя файла CSV, для теста
 #filename = input("Введите файл ")
-# data_for_parser = open_csv("Статистика 12.03 Акрон - Спартак.csv")
-# diagram = parser_data_of_time(data_for_parser[3:])
-# print(len(diagram[2]), diagram[2])
-# print(len(diagram[0]), diagram[0])
-# print(len(diagram[1]), diagram[1])
-# print(diagram[3])
 
-# df = {'Время проходов':'', 'Количество проходов': ''}
-# df['Время проходов'] = diagram[0]
-# df['Количество проходов'] = diagram[1]
-# print(df)
+data_for_parser = open_csv("spartak.csv")
+
+total_data = " ".join(data_for_parser[1][3:4])
+
+print(total_data)
+# for i in data_for_parser[1][3:]:
+    # total_data = " ".join(i)
+    # print(total_data)
+    # print(i)
+
+# dictionary = {
+#     'G1': {
+#         'G1_1': 15, 'G1_2': 44, 'G1_3': 145}}
+# print(dictionary.values())
+# for i in dictionary.values():
+#     print(i)
+#     for i in i.values():
+#         print(i)
+
+
+# print(data_for_parser)
+# diagram = parser_data_of_time(data_for_parser[0][3:])
+# print(diagram[0])
+# print(diagram[1])

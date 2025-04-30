@@ -1,6 +1,5 @@
 from dash import Dash, html, dcc, Input, Output, dash_table
 import dash_bootstrap_components as dbc
-from matplotlib.pyplot import title
 
 from folder import input_match
 from parser import open_csv, parser_data_of_time
@@ -8,9 +7,6 @@ from parser import open_csv, parser_data_of_time
 import plotly.express as px
 import pandas as pd
 
-
-test = {'a':[1, 2, 3], 'b':[1, 2, 3]}
-df = pd.DataFrame.from_dict(test)
 
 app = Dash(__name__, title="Statistic Stadium", external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
@@ -21,7 +17,7 @@ server = app.server
 # BasicAuth(app, USER_PWD)
 
 # Вывод таблицы
-table1 = dash_table.DataTable(id='table_data', sort_action='native', style_table={'height': '700px', 'overflowY': 'auto', 'border': '2px solid', 'border-radius': '20px'}, style_header={'backgroundColor': 'rgb(30, 30, 30)', 'color': 'white'})
+table1 = dash_table.DataTable(id='table_data', sort_action='native', style_table={'height': '700px', 'overflowY': 'auto'}, style_header={'backgroundColor': 'rgb(30, 30, 30)', 'color': 'white'})
 
 # Вывод дашборда
 app.layout = html.Div([
@@ -44,7 +40,7 @@ app.layout = html.Div([
         dbc.Col([html.H6('Время проходов по времени', style={'padding': '5px'}),
                  table1], width=3, style={'border': '2px solid', 'border-radius': '20px'}),
         # dbc.Col(width=1),
-        dbc.Col([dcc.Graph(id='output_graph1', config={'displayModeBar': False}), dcc.Graph(id='output_graph2')], width=7, style={'border': '2px solid', 'border-radius': '20px'}),
+        dbc.Col([dcc.Graph(id='output_graph1', config={'displayModeBar': False}), dcc.Graph(id='output_graph2')], width=7, style={"margin-left": "2px", 'border': '2px solid', 'border-radius': '20px'}),
         dbc.Col(width=1),
     ]),
     html.Br(),
@@ -86,18 +82,18 @@ def display_graph(match):
         table_data = pd.DataFrame.from_dict({})
         return fig, fig2, title_page, number_of_passes, table_data.to_dict('records')
     else:
-        data_to_fig = parser_data_of_time(open_csv(match)[3:])
+        data_to_fig = parser_data_of_time(open_csv(match)[0][3:])
 
-        df = pd.DataFrame.from_dict(data_to_fig[4])
+        df = pd.DataFrame.from_dict(data_to_fig[1])
 
-        fig = px.line(x=data_to_fig[0], y=data_to_fig[1], height=400, title=f'РАСПРЕДЕЛЕНИЕ ВХОДОВ ПО БИЛЕТАМ ПО ВРЕМЕНИ {match}')
-        fig2 = px.bar(x=data_to_fig[0], y=data_to_fig[1], height=400, text=data_to_fig[2])
-        fig.layout.xaxis.title = 'Время'
-        fig.layout.yaxis.title = 'Входы по билетам'
-        fig2.layout.xaxis.title = 'Время'
-        fig2.layout.yaxis.title = 'Входы по билетам'
+        fig = px.line(x=data_to_fig[1]['Время проходов'], y=data_to_fig[1]['Количество проходов'], height=400, title=f'РАСПРЕДЕЛЕНИЕ ВХОДОВ ПО БИЛЕТАМ ПО ВРЕМЕНИ {match}')
+        fig2 = px.bar(x=data_to_fig[1]['Время проходов'], y=data_to_fig[1]['Количество проходов'], height=400, text=data_to_fig[1]['В %'])
+        fig.layout.xaxis.title = 'Время проходов'
+        fig.layout.yaxis.title = 'Количество проходов'
+        fig2.layout.xaxis.title = 'Время проходов'
+        fig2.layout.yaxis.title = 'Количество проходов'
         title_page = f'Статистика по матчу {match}'
-        number_of_passes =  f'Всего проходов по билетам: {data_to_fig[3][1]}'
+        number_of_passes =  f'Всего количество проходов: {data_to_fig[0][1]}'
         return fig, fig2, title_page, number_of_passes, df.to_dict('records')
 
 
