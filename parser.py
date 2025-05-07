@@ -49,36 +49,34 @@ def parser_data_of_time(data):
     return total_data_finish, df
 
 """-----------------------------------------------------------------"""
+
+def parser_data_of_sectors(data):
+    all_list_only_sum = []
+    all_list_without_summ = []
+    kpp_dict = {}
+    for i in data[1][4:]:
+        str = re.split(r"\s\s+", i)
+        if "ВСЕГО" in str[1]:
+            all_list_only_sum.append(str)
+        else:
+            all_list_without_summ.append(str)
+    for name, group in itertools.groupby(all_list_without_summ, lambda x: x[0]):
+        kpp_group = []
+        # print(name)
+        for i in group:
+            kpp_group.append(*i[1:2])
+            # print(i[1:2])
+        kpp_dict[name] = kpp_group
+    return all_list_only_sum
+
 # Ввод имя файла CSV, для теста
 #filename = input("Введите файл ")
+# test = parser_data_of_sectors(open_csv("spartak.csv"))
+# print(test)
 
-data_for_parser = open_csv("spartak.csv")
+# print(kpp_dict)
+# [print(i[2]) for i in all_list_only_sum]
 
-total_data = " ".join(data_for_parser[1][3:4])
-# print(total_data.split())
-all_list_only_sum = []
-all_list_without_summ = []
-kpp_dict = {}
-for i in data_for_parser[1][4:]:
-    str = re.split(r"\s\s+", i)
-    if "ВСЕГО" in str[1]:
-        all_list_only_sum.append(str)
-    else:
-        all_list_without_summ.append(str)
-for name, group in itertools.groupby(all_list_without_summ, lambda x: x[0]):
-    kpp_group = []
-    for i in group:
-        kpp_group.append(i[1:])
-    kpp_dict[name] = kpp_group
-# dictionary = {
-#     'G1': {
-#         'G1_1': 15, 'G1_2': 44, 'G1_3': 145}}
-print(kpp_dict.keys())
-# print(all_dict)
-# for i in all_dict.values():
-#     # print(i)
-#     for i in i:
-#         print(i)
 
 
 # print(data_for_parser)

@@ -2,7 +2,7 @@ from dash import Dash, html, dcc, Input, Output, dash_table
 import dash_bootstrap_components as dbc
 
 from folder import input_match
-from parser import open_csv, parser_data_of_time
+from parser import open_csv, parser_data_of_time, parser_data_of_sectors
 # from dash_auth import BasicAuth
 import plotly.express as px
 import pandas as pd
@@ -44,10 +44,12 @@ app.layout = html.Div([
         dbc.Col(width=1),
     ]),
     html.Br(),
+    html.H4('Статистика по секторам', style={'color': 'darkblue',
+                   'text-align': 'center',
+                   'padding': '20px 20px 20px 20px'}),
     dbc.Row([
-        dbc.Col(width=2),
         dbc.Col(dcc.Graph(id='output_graph3'), width=6),
-
+        dbc.Col(id='several_graph', width=6),
     ]),
     html.Br(),
 
@@ -70,6 +72,7 @@ app.layout = html.Div([
               Output('title', 'children'),
               Output('number_of_passes', 'children'),
               Output('table_data', 'data'),
+              Output('several_graph', 'children'),
               Input('select_match', 'value'))
 
 def display_graph(match):
@@ -80,7 +83,10 @@ def display_graph(match):
         title_page = f'Статистика по матчу'
         number_of_passes = 'Всего проходов по билетам: 0'
         table_data = pd.DataFrame.from_dict({})
-        return fig, fig2, title_page, number_of_passes, table_data.to_dict('records')
+
+        fig3 = dcc.Graph()
+
+        return fig, fig2, title_page, number_of_passes, table_data.to_dict('records'), fig3
     else:
         data_to_fig = parser_data_of_time(open_csv(match)[0][3:])
 
@@ -94,7 +100,14 @@ def display_graph(match):
         fig2.layout.yaxis.title = 'Количество проходов'
         title_page = f'Статистика по матчу {match}'
         number_of_passes =  f'Всего количество проходов: {data_to_fig[0][1]}'
-        return fig, fig2, title_page, number_of_passes, df.to_dict('records')
+
+        to_several_graph = parser_data_of_sectors(open_csv(match))
+        print(to_several_graph)
+        several_graph = []
+        for i in to_several_graph:
+            several_graph.append(dcc.Graph(id=str(i)), )
+
+        return fig, fig2, title_page, number_of_passes, df.to_dict('records'), several_graph
 
 
 if __name__ == '__main__':
