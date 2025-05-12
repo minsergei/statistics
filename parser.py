@@ -64,15 +64,19 @@ def parser_data_of_sectors(data):
         kpp_group = []
         # print(name)
         for i in group:
-            kpp_group.append(*i[1:2])
+            kpp_group.append(i[1:3])
             # print(i[1:2])
         kpp_dict[name] = kpp_group
-    return all_list_only_sum
+    return all_list_only_sum, kpp_dict
 
 # Ввод имя файла CSV, для теста
 #filename = input("Введите файл ")
-# test = parser_data_of_sectors(open_csv("spartak.csv"))
-# print(test)
+test = parser_data_of_sectors(open_csv("spartak.csv"))
+# print(test[1].values())
+for i in test[1].values():
+    print(i)
+    # for ii in i:
+    #     print(ii[1])
 
 # print(kpp_dict)
 # [print(i[2]) for i in all_list_only_sum]

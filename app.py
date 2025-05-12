@@ -72,6 +72,7 @@ app.layout = html.Div([
               Output('title', 'children'),
               Output('number_of_passes', 'children'),
               Output('table_data', 'data'),
+              Output('output_graph3', 'figure'),
               Output('several_graph', 'children'),
               Input('select_match', 'value'))
 
@@ -84,9 +85,9 @@ def display_graph(match):
         number_of_passes = 'Всего проходов по билетам: 0'
         table_data = pd.DataFrame.from_dict({})
 
-        fig3 = dcc.Graph()
-
-        return fig, fig2, title_page, number_of_passes, table_data.to_dict('records'), fig3
+        fig3 = px.bar()
+        fig4 = dcc.Graph()
+        return fig, fig2, title_page, number_of_passes, table_data.to_dict('records'), fig3, fig4
     else:
         data_to_fig = parser_data_of_time(open_csv(match)[0][3:])
 
@@ -102,12 +103,16 @@ def display_graph(match):
         number_of_passes =  f'Всего количество проходов: {data_to_fig[0][1]}'
 
         to_several_graph = parser_data_of_sectors(open_csv(match))
-        print(to_several_graph)
-        several_graph = []
-        for i in to_several_graph:
-            several_graph.append(dcc.Graph(id=str(i)), )
+        x_to_data_sectors = [i[0] for i in to_several_graph[0]]
+        y_to_data_sectors = [int(i[2]) for i in to_several_graph[0]]
 
-        return fig, fig2, title_page, number_of_passes, df.to_dict('records'), several_graph
+        fig3_several = px.bar(x=x_to_data_sectors, y=y_to_data_sectors, height=400, title=f'РАСПРЕДЕЛЕНИЕ ВХОДОВ ПО СЕКТОРАМ {match}', text=y_to_data_sectors)
+        several_graph = []
+        for i in to_several_graph[1]:
+            figure = px.bar(x=[0], y=[1], title=str(i))
+            several_graph.append(dcc.Graph(figure=figure))
+
+        return fig, fig2, title_page, number_of_passes, df.to_dict('records'), fig3_several, several_graph
 
 
 if __name__ == '__main__':
