@@ -59,24 +59,36 @@ def parser_data_of_sectors(data):
         if "ВСЕГО" in str[1]:
             all_list_only_sum.append(str)
         else:
-            all_list_without_summ.append(str)
+            try:
+                print(str)
+                int_data, int_data2 = str[2], str[4]
+                str[2] = int(int_data)
+                str[4] = int(int_data2)
+            except ValueError:
+                print("Erroorrrrrr!")
+            else:
+                all_list_without_summ.append(str)
     for name, group in itertools.groupby(all_list_without_summ, lambda x: x[0]):
         kpp_group = []
         # print(name)
         for i in group:
-            kpp_group.append(i[1:3])
+            kpp_group.append(i[1:5])
             # print(i[1:2])
         kpp_dict[name] = kpp_group
-    return all_list_only_sum, kpp_dict
+    return all_list_only_sum, kpp_dict, all_list_without_summ
 
 # Ввод имя файла CSV, для теста
 #filename = input("Введите файл ")
-test = parser_data_of_sectors(open_csv("spartak.csv"))
+# test = parser_data_of_sectors(open_csv("Статистика Локомотив 15.04.csv"))
+#
+# print(test[1])
 # print(test[1].values())
-for i in test[1].values():
-    print(i)
-    # for ii in i:
-    #     print(ii[1])
+# print(test[1])
+# for i in test[1].values():
+#     print(i[0])
+#     for ii in i:
+#
+#         print(ii[0], ii[1], ii[3])
 
 # print(kpp_dict)
 # [print(i[2]) for i in all_list_only_sum]

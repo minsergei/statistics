@@ -8,7 +8,7 @@ import plotly.express as px
 import pandas as pd
 
 
-app = Dash(__name__, title="Statistic Stadium", external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = Dash(__name__, title="Statistic Stadium", suppress_callback_exceptions=True, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
 
 # Авторизация простая
@@ -28,7 +28,7 @@ app.layout = html.Div([
     html.Br(),
     dbc.Row([
         dbc.Col(width=1),
-        dbc.Col(dcc.Dropdown(input_match(), style={'color': 'darkblue'}, id='select_match'), width=5),
+        dbc.Col(dcc.Dropdown(input_match(), placeholder='Выберите матч', style={'color': 'darkblue'}, id='select_match'), width=5),
         dbc.Col(width=1),
         dbc.Col(html.Div(style={'color': 'darkblue',
                    'fontSize': '20px',
@@ -47,10 +47,16 @@ app.layout = html.Div([
     html.H4('Статистика по секторам', style={'color': 'darkblue',
                    'text-align': 'center',
                    'padding': '20px 20px 20px 20px'}),
+    dcc.Graph(id='output_graph4'),
     dbc.Row([
-        dbc.Col(dcc.Graph(id='output_graph3'), width=6),
+        dbc.Col(width=6),
         dbc.Col(id='several_graph', width=6),
     ]),
+    dbc.Row([
+        dbc.Col(dcc.Graph(id='output_graph3'), width=6),
+        dbc.Col(dcc.Graph(id='output_graph5'), width=6),
+    ]),
+
     html.Br(),
 
 
@@ -73,6 +79,7 @@ app.layout = html.Div([
               Output('number_of_passes', 'children'),
               Output('table_data', 'data'),
               Output('output_graph3', 'figure'),
+              Output('output_graph4', 'figure'),
               Output('several_graph', 'children'),
               Input('select_match', 'value'))
 
@@ -86,8 +93,9 @@ def display_graph(match):
         table_data = pd.DataFrame.from_dict({})
 
         fig3 = px.bar()
-        fig4 = dcc.Graph()
-        return fig, fig2, title_page, number_of_passes, table_data.to_dict('records'), fig3, fig4
+        fig4 = px.bar()
+        fig5 = dcc.Dropdown(value='Пусто', id='select_sectors')
+        return fig, fig2, title_page, number_of_passes, table_data.to_dict('records'), fig3, fig4, fig5
     else:
         data_to_fig = parser_data_of_time(open_csv(match)[0][3:])
 
@@ -105,15 +113,44 @@ def display_graph(match):
         to_several_graph = parser_data_of_sectors(open_csv(match))
         x_to_data_sectors = [i[0] for i in to_several_graph[0]]
         y_to_data_sectors = [int(i[2]) for i in to_several_graph[0]]
+        y_two_to_data_sectors = [int(i[4]) for i in to_several_graph[0]]
 
-        fig3_several = px.bar(x=x_to_data_sectors, y=y_to_data_sectors, height=400, title=f'РАСПРЕДЕЛЕНИЕ ВХОДОВ ПО СЕКТОРАМ {match}', text=y_to_data_sectors)
-        several_graph = []
-        for i in to_several_graph[1]:
-            figure = px.bar(x=[0], y=[1], title=str(i))
-            several_graph.append(dcc.Graph(figure=figure))
+        fig3_several = px.bar(x=x_to_data_sectors, y=[y_to_data_sectors, y_two_to_data_sectors], barmode='group', height=400, title=f'РАСПРЕДЕЛЕНИЕ ВХОДОВ ПО СЕКТОРАМ {match}')
 
-        return fig, fig2, title_page, number_of_passes, df.to_dict('records'), fig3_several, several_graph
+        headers_to_fig4 = ['Сектор', 'Точка доступа', 'Проходы', 'Проценты пр', 'Отменены', 'Процент отм']
+        rows = to_several_graph[2]
+        df_to_fig4 = pd.DataFrame(rows, columns=headers_to_fig4)
+        data_sectors = df_to_fig4.query("Сектор == 'SMR.G1/КПП G1'")
+        fig4_several = px.bar(df_to_fig4, x='Точка доступа', y=['Проходы', 'Отменены'], color='Сектор', height=400,)
 
+        # several_graph = []
+        # for i in to_several_graph[1]:
+        #     figure = px.bar(x=[0], y=[1], title=str(i))
+        #     several_graph.append(dcc.Graph(figure=figure))
+        group_by_data_sectors = []
+        for i in to_several_graph[0]:
+            group_by_data_sectors.append(i[0])
+        several_graph = dcc.Dropdown(group_by_data_sectors, placeholder='Выберите сектор', style={'color': 'darkblue'}, id='select_sectors')
+
+        return fig, fig2, title_page, number_of_passes, df.to_dict('records'), fig3_several, fig4_several, several_graph
+
+@app.callback(Output('output_graph5', 'figure'),
+              Input('select_match', 'value'),
+              Input('select_sectors', 'value'))
+
+def display_sectors_graph(match, sectors):
+    if match is None:
+        fig4_several = px.bar()
+        return fig4_several
+    else:
+        to_several_graph = parser_data_of_sectors(open_csv(match))
+        headers_to_fig4 = ['Сектор', 'Точка доступа', 'Проходы', 'Проценты пр', 'Отменены', 'Процент отм']
+        rows = to_several_graph[2]
+        df_to_fig4 = pd.DataFrame(rows, columns=headers_to_fig4)
+        data_sectors = df_to_fig4.query(f"Сектор == '{sectors}'")
+        fig4_several = px.bar(data_sectors, x='Точка доступа', y=['Проходы', 'Отменены'], barmode='group', height=400, )
+
+        return fig4_several
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
