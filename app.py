@@ -120,8 +120,8 @@ def display_graph(match):
         headers_to_fig4 = ['Сектор', 'Точка доступа', 'Проходы', 'Проценты пр', 'Отменены', 'Процент отм']
         rows = to_several_graph[2]
         df_to_fig4 = pd.DataFrame(rows, columns=headers_to_fig4)
-        data_sectors = df_to_fig4.query("Сектор == 'SMR.G1/КПП G1'")
-        fig4_several = px.bar(df_to_fig4, x='Точка доступа', y=['Проходы', 'Отменены'], color='Сектор', height=400,)
+        # data_sectors = df_to_fig4.query("Сектор == 'SMR.G1/КПП G1'")
+        fig4_several = px.bar(df_to_fig4, x='Точка доступа', y=['Проходы', 'Отменены'], barmode="stack", color='Сектор' , height=600,)
 
         # several_graph = []
         # for i in to_several_graph[1]:

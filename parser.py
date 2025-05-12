@@ -27,6 +27,8 @@ def open_csv(filename):
                 #     pars = 0
                 # if pars == 1:
                 #     pars_data.append(line[0])
+        pars_data = [x for x in pars_data if x.strip()]
+        pars_data_2 = [x for x in pars_data_2 if x.strip()]
     return pars_data[:-1], pars_data_2[:-1]
 
 # Парсим данные для РАСПРЕДЕЛЕНИЕ ВХОДОВ ПО БИЛЕТАМ ПО ВРЕМЕНИ
@@ -60,12 +62,12 @@ def parser_data_of_sectors(data):
             all_list_only_sum.append(str)
         else:
             try:
-                print(str)
                 int_data, int_data2 = str[2], str[4]
                 str[2] = int(int_data)
                 str[4] = int(int_data2)
             except ValueError:
-                print("Erroorrrrrr!")
+                pass
+                # print("Erroorrrrrr!")
             else:
                 all_list_without_summ.append(str)
     for name, group in itertools.groupby(all_list_without_summ, lambda x: x[0]):
@@ -79,8 +81,12 @@ def parser_data_of_sectors(data):
 
 # Ввод имя файла CSV, для теста
 #filename = input("Введите файл ")
-# test = parser_data_of_sectors(open_csv("Статистика Локомотив 15.04.csv"))
-#
+
+# test = parser_data_of_time(open_csv("Статистика_по_билетам_Урал_Уфа_20250511.csv")[0][3:])
+# test = parser_data_of_time(open_csv("spartak.csv")[0][3:])
+# test = parser_data_of_sectors(open_csv("Статистика_по_билетам_Урал_Уфа_20250511.csv"))
+# test = parser_data_of_sectors(open_csv("spartak.csv"))
+# print(test)
 # print(test[1])
 # print(test[1].values())
 # print(test[1])
