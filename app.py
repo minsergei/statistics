@@ -1,5 +1,6 @@
 from dash import Dash, html, dcc, Input, Output, dash_table
 import dash_bootstrap_components as dbc
+from dash.exceptions import PreventUpdate
 
 from folder import input_match
 from parser import open_csv, parser_data_of_time, parser_data_of_sectors
@@ -50,7 +51,7 @@ app.layout = html.Div([
     dcc.Graph(id='output_graph4'),
     dbc.Row([
         dbc.Col(width=6),
-        dbc.Col(id='several_graph', width=6),
+        dbc.Col(dcc.Dropdown(placeholder='Выберите сектор', style={'color': 'darkblue'}, id='select_sectors')),
     ]),
     dbc.Row([
         dbc.Col(dcc.Graph(id='output_graph3'), width=6),
@@ -80,22 +81,12 @@ app.layout = html.Div([
               Output('table_data', 'data'),
               Output('output_graph3', 'figure'),
               Output('output_graph4', 'figure'),
-              Output('several_graph', 'children'),
+              Output('select_sectors', 'options'),
               Input('select_match', 'value'))
 
 def display_graph(match):
     if match is None:
-        fig = px.bar()
-        fig2 = px.bar()
-        fig.layout.title = f'РАСПРЕДЕЛЕНИЕ ВХОДОВ ПО БИЛЕТАМ ПО ВРЕМЕНИ'
-        title_page = f'Статистика по матчу'
-        number_of_passes = 'Всего проходов по билетам: 0'
-        table_data = pd.DataFrame.from_dict({})
-
-        fig3 = px.bar()
-        fig4 = px.bar()
-        fig5 = dcc.Dropdown(value='Пусто', id='select_sectors')
-        return fig, fig2, title_page, number_of_passes, table_data.to_dict('records'), fig3, fig4, fig5
+        raise PreventUpdate
     else:
         data_to_fig = parser_data_of_time(open_csv(match)[0][3:])
 
@@ -130,27 +121,28 @@ def display_graph(match):
         group_by_data_sectors = []
         for i in to_several_graph[0]:
             group_by_data_sectors.append(i[0])
-        several_graph = dcc.Dropdown(group_by_data_sectors, placeholder='Выберите сектор', style={'color': 'darkblue'}, id='select_sectors')
+        select_sectors = group_by_data_sectors
 
-        return fig, fig2, title_page, number_of_passes, df.to_dict('records'), fig3_several, fig4_several, several_graph
+        return fig, fig2, title_page, number_of_passes, df.to_dict('records'), fig3_several, fig4_several, select_sectors
 
 @app.callback(Output('output_graph5', 'figure'),
               Input('select_match', 'value'),
               Input('select_sectors', 'value'))
 
 def display_sectors_graph(match, sectors):
-    if match is None:
-        fig4_several = px.bar()
-        return fig4_several
+    if match is None or sectors is None:
+        raise PreventUpdate
+        # fig4_several = px.bar()
+        # return fig4_several
     else:
         to_several_graph = parser_data_of_sectors(open_csv(match))
         headers_to_fig4 = ['Сектор', 'Точка доступа', 'Проходы', 'Проценты пр', 'Отменены', 'Процент отм']
         rows = to_several_graph[2]
         df_to_fig4 = pd.DataFrame(rows, columns=headers_to_fig4)
         data_sectors = df_to_fig4.query(f"Сектор == '{sectors}'")
-        fig4_several = px.bar(data_sectors, x='Точка доступа', y=['Проходы', 'Отменены'], barmode='group', height=400, )
+        fig4_several = px.bar(data_sectors, x='Точка доступа', y=['Проходы', 'Отменены'], title=f'РАСПРЕДЕЛЕНИЕ ВХОДОВ ПО КОНКРЕТНОМУ СЕКТОРУ', barmode='group', height=400, )
 
         return fig4_several
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
