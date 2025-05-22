@@ -18,7 +18,29 @@ server = app.server
 # BasicAuth(app, USER_PWD)
 
 # Вывод таблицы
-table1 = dash_table.DataTable(id='table_data', sort_action='native', style_table={'height': '700px', 'overflowY': 'auto'}, style_header={'backgroundColor': 'rgb(30, 30, 30)', 'color': 'white'})
+table1 = dash_table.DataTable(id='table_data', sort_action='native',
+                              style_table={'height': '700px', 'overflowY': 'auto'},
+                              style_header={'backgroundColor': 'rgb(30, 30, 30)', 'color': 'white'},
+                              style_data_conditional=[
+                                  {
+                                      'if': {
+                                          'filter_query': '{Количество проходов} > 100',
+                                          # 'filter_query': '{{Население (млн)}} = {}'.format(min_population),
+                                          'column_id': 'Количество проходов'
+                                      },
+                                      'backgroundColor': 'blue',
+                                      'color': 'white'
+                                  },
+{
+                                      'if': {
+                                          'filter_query': '{Количество проходов} < 5',
+                                          'column_id': 'Количество проходов'
+                                      },
+                                      'backgroundColor': 'red',
+                                      'color': 'white'
+                                  }
+                              ],
+                              )
 
 # Вывод дашборда
 app.layout = html.Div([
